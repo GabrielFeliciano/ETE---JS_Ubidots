@@ -1,0 +1,33 @@
+#resultados {
+    width: 100%;
+
+    .attac-list {
+        border-left: 1rem solid gold;
+
+        &.right {
+            background-color: lightgreen;
+        }
+    
+        &.right::before {
+            content: '✔';
+        }
+    
+        &.wrong {
+            background-color: lightcoral;
+        }
+    
+        &.wrong::before {
+            content: '❌';
+        }
+    }
+
+    .one-send {
+        &.right {
+            border-left: 2rem solid green;
+        }
+
+        &.wrong {
+            border-left: 2rem solid red;
+        }
+    }
+}

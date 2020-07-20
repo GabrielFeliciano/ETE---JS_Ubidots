@@ -1,0 +1,25 @@
+@charset "UTF-8";
+#resultados {
+  width: 100%;
+}
+#resultados .attac-list {
+  border-left: 1rem solid gold;
+}
+#resultados .attac-list.right {
+  background-color: lightgreen;
+}
+#resultados .attac-list.right::before {
+  content: '✔';
+}
+#resultados .attac-list.wrong {
+  background-color: lightcoral;
+}
+#resultados .attac-list.wrong::before {
+  content: '❌';
+}
+#resultados .one-send.right {
+  border-left: 2rem solid green;
+}
+#resultados .one-send.wrong {
+  border-left: 2rem solid red;
+}

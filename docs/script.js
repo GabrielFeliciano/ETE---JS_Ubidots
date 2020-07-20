@@ -57,7 +57,18 @@ $('#send').click(function () {
   const turma = $('select#turma').val();
   const grupo = $('select#grupo').val();
   const temp = $("#temperatura").val();
-  requester (turma, grupo, temp);
+
+  const $liShow = $('<li class="one-send"></li>');
+  requester (turma, grupo, temp, Http => {
+    if (Http.responseText.includes("201")) {
+      $liShow.addClass('right');
+      $liShow.html(`<p>Deu certo - Turma: ${turma}, Grupo: ${grupo}, Valor: ${temp}</p>`);
+    } else {
+      $liShow.addClass('wrong');
+      $liShow.html(`<p>Deu errado - Turma: ${turma}, Grupo: ${grupo}, Valor: ${temp}</p>`);
+    }
+    $('#resultados').append($liShow);
+  });
 });
 
 $('#explode').click(function () {
@@ -70,7 +81,13 @@ $('#explode').click(function () {
   let turma = 21;
   let group = 1;
   const timing = $('#timing-explode').val() * 1 || 500;
-  const val = $('#val-explode').val() * 1 || (() => (Math.random() * 100).toFixed(2))
+  const val = $('#val-explode').val() * 1
+  const randomNumberValid = () => (Math.random() * 100).toFixed(2)
+
+  const $attacList__container = $('<li class="attac-list__container"></li>');
+  const $attacList = $('<ul class="attac-list"></ul>');
+  $($attacList__container).append($attacList);
+  $('#resultados').append($attacList__container);
 
   const id = setInterval(() => {
     if (turma > 24) {
@@ -79,8 +96,14 @@ $('#explode').click(function () {
       return null;
     }
     if (group <= 20) {
-      requester(turma, group, typeof val == 'function' ? val() : val, Http => {
-        Http.responseText.includes("201") ? console.log('Deu certo') : console.log('Deu errado');
+      requester(turma, group, val || randomNumberValid(), Http => {
+        if (Http.responseText.includes("201")) {
+          console.log('Deu certo');
+          $attacList.append($(`<li class="right">Deu certo - Turma: ${turma}, Grupo: ${group}, Valor: ${val || randomNumberValid()};</li>`));
+        } else {
+          console.log('Deu errado');
+          $attacList.append($(`<li class="wrong">Deu erro - Turma: ${turma}, Grupo: ${group}, Valor: ${val || randomNumberValid()};</li>`));
+        }
       })
       group++;
     } else {
