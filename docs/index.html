@@ -1,0 +1,60 @@
+<!-- UBIDOTS -->
+<!DOCTYPE html>
+<html>
+<meta charset="UTF-8">
+<head>
+    <title>UBIDOTS TESTER</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- JQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js" crossorigin="anonymous"></script>
+
+    <!-- Reset CSS -->
+    <link rel="stylesheet" href="https://meyerweb.com/eric/tools/css/reset/reset.css">
+
+    <link rel="shortcut icon" href="data:;base64,iVBORw0KGgo=">
+    <link rel="stylesheet" href="./assets/style/css/style.css">
+</head>
+<body>
+    <header>
+        <h1>Vamos montar um simulador de hardware para enviar dados ao Ubidots</h1>
+    </header>
+    <main>
+        <section class="form__container">
+            <div class="form">
+                <div>
+                    <label>Temperatura</label>
+                    <input id="temperatura"></input>
+                </div>
+                
+                <div>
+                    <label for="turma">Turma</label>
+                    <select name="turma" id="turma"></select>
+                </div>
+
+                <div>
+                    <label for="grupo">Grupo</label>
+                    <select name="grupo" id="grupo"></select>
+                </div>
+            </div>
+            <div>
+                <button id="send"> ENVIAR </button>
+            </div>
+            <div class="row">
+                <label for="explode-action">Explode everbody Dataset</label>
+                <button name="explode-action" id="explode">Explode everbody Dataset</button>
+            </div>
+            <div class="row">
+                <label for="timing-explode">Timing</label>
+                <input type="text" name="timing-explode" id="timing-explode" placeholder="500ms (padrão)">
+            </div>
+            <div class="row">
+                <label for="val-explode">Valor (0 - 100)</label>
+                <input type="text" name="val-explode" id="val-explode" placeholder="69">
+            </div>
+        </section>
+    </main>
+    <footer></footer>
+    <script src="./script.js"> </script>
+</body>
+</html>

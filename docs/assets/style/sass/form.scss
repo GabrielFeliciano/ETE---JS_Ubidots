@@ -1,0 +1,43 @@
+.form__container {
+    width: 100%;
+
+    #answer {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
+
+.form {
+    width: 100%;
+
+    display: flex;
+    flex-flow: column;
+    justify-content: center;
+    align-items: center;
+
+    & > div {
+        width: 100%;
+        display: flex;
+        flex-flow: column;
+        padding: .5rem;
+
+        label {
+            flex-grow: 1;
+        }
+    }
+
+    select, input {
+        font-size: 1.2em;
+    }
+}
+
+.form__container > *:not(.form) {
+    width: 100%;
+    justify-content: space-between;
+    padding: .3rem 0;
+
+    font-size: 1.2em;
+    select, input {
+        font-size: 1.2em;
+    }
+}

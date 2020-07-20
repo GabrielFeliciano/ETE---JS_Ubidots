@@ -1,0 +1,10 @@
+#price-display {
+  background-color: transparent;
+  text-align: center;
+  font-size: 2em;
+}
+@media screen and (max-width: 500px) {
+  #price-display {
+    font-size: 1em;
+  }
+}
