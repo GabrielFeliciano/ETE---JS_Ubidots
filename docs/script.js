@@ -41,10 +41,14 @@ function requester (turma, grupo, value, callback) {
   Http.setRequestHeader("X-Auth-Token", token);
   Http.setRequestHeader("Content-Type", "application/json");
   
-  callback ? Http.onload = () => {
+  Http.onload = callback ? () => {
     console.log(`Turma: ${turma}, Grupo: ${grupo}, Value: ${value}, url: ${url}`);
     callback(Http);
-  } : null
+  } : () => {
+    console.log(Http.responseText);
+    Http.responseText.includes("201") ? console.log('Deu certo') : console.log('Deu errado');
+    console.log(Http);
+  }
 
   Http.send(dado);
 }
@@ -53,11 +57,7 @@ $('#send').click(function () {
   const turma = $('select#turma').val();
   const grupo = $('select#grupo').val();
   const temp = $("#temperatura").val();
-  requester (turma, grupo, temp, Http => {
-    console.log(Http.responseText);
-    Http.responseText.includes("201") ? console.log('Deu certo') : console.log('Deu errado');
-    console.log(Http);
-  })
+  requester (turma, grupo, temp);
 });
 
 $('#explode').click(function () {
@@ -70,7 +70,7 @@ $('#explode').click(function () {
   let turma = 21;
   let group = 1;
   const timing = $('#timing-explode').val() * 1 || 500;
-  const val = $('#val-explode').val() * 1 || 69
+  const val = $('#val-explode').val() * 1 || (() => (Math.random() * 100).toFixed(2))
 
   const id = setInterval(() => {
     if (turma > 24) {
@@ -79,7 +79,7 @@ $('#explode').click(function () {
       return null;
     }
     if (group <= 20) {
-      requester(turma, group, val, Http => {
+      requester(turma, group, typeof val == 'function' ? val() : val, Http => {
         Http.responseText.includes("201") ? console.log('Deu certo') : console.log('Deu errado');
       })
       group++;
