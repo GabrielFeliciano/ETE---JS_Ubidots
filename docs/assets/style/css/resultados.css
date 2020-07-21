@@ -5,21 +5,23 @@
 #resultados .attac-list {
   border-left: 1rem solid gold;
 }
-#resultados .attac-list.right {
+#resultados .attac-list .right {
   background-color: lightgreen;
 }
-#resultados .attac-list.right::before {
+#resultados .attac-list .right::before {
   content: '✔';
 }
-#resultados .attac-list.wrong {
+#resultados .attac-list .wrong {
   background-color: lightcoral;
 }
-#resultados .attac-list.wrong::before {
+#resultados .attac-list .wrong::before {
   content: '❌';
 }
 #resultados .one-send.right {
   border-left: 2rem solid green;
+  background-color: lightgreen;
 }
 #resultados .one-send.wrong {
   border-left: 2rem solid red;
+  background-color: lightcoral;
 }

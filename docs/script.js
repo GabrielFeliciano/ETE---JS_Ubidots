@@ -43,7 +43,7 @@ function requester (turma, grupo, value, callback) {
   
   Http.onload = callback ? () => {
     console.log(`Turma: ${turma}, Grupo: ${grupo}, Value: ${value}, url: ${url}`);
-    callback(Http);
+    callback(Http, turma, grupo, value);
   } : () => {
     console.log(Http.responseText);
     Http.responseText.includes("201") ? console.log('Deu certo') : console.log('Deu errado');
@@ -95,18 +95,17 @@ $('#explode').click(function () {
       clearInterval(id);
       return null;
     }
-    if (group <= 20) {
-      requester(turma, group, val || randomNumberValid(), Http => {
-        if (Http.responseText.includes("201")) {
-          console.log('Deu certo');
-          $attacList.append($(`<li class="right">Deu certo - Turma: ${turma}, Grupo: ${group}, Valor: ${val || randomNumberValid()};</li>`));
-        } else {
-          console.log('Deu errado');
-          $attacList.append($(`<li class="wrong">Deu erro - Turma: ${turma}, Grupo: ${group}, Valor: ${val || randomNumberValid()};</li>`));
-        }
-      })
-      group++;
-    } else {
+    requester(turma, group, val || randomNumberValid(), (Http, turma, group, val) => {
+      if (Http.responseText.includes("201")) {
+        console.log('Deu certo');
+        $attacList.append($(`<li class="right">Deu certo - Turma: ${turma}, Grupo: ${group}, Valor: ${val || randomNumberValid()};</li>`));
+      } else {
+        console.log('Deu errado');
+        $attacList.append($(`<li class="wrong">Deu erro - Turma: ${turma}, Grupo: ${group}, Valor: ${val || randomNumberValid()};</li>`));
+      }
+    })
+    group++;
+    if (group > 20) {
       turma++;
       group = 1;
     }

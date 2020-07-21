@@ -4,19 +4,19 @@
     .attac-list {
         border-left: 1rem solid gold;
 
-        &.right {
+        .right {
             background-color: lightgreen;
         }
     
-        &.right::before {
+        .right::before {
             content: '✔';
         }
     
-        &.wrong {
+        .wrong {
             background-color: lightcoral;
         }
     
-        &.wrong::before {
+        .wrong::before {
             content: '❌';
         }
     }
@@ -24,10 +24,17 @@
     .one-send {
         &.right {
             border-left: 2rem solid green;
+            background-color: lightgreen;
         }
 
         &.wrong {
             border-left: 2rem solid red;
+            background-color: lightcoral;
         }
     }
+
+    // & > * {
+    //     padding: 1rem 0;
+    //     background-color: goldenrod;
+    // }
 }
