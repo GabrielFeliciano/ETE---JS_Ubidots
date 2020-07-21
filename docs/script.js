@@ -41,6 +41,7 @@ function requester (turma, grupo, value, callback) {
 	Http.setRequestHeader("Content-Type", "application/json");
 	
 	Http.onload = callback ? () => {
+		console.log(`Dados: ${dado}`)
 		console.log(`Turma: ${turma}, Grupo: ${grupo}, Value: ${value}, url: ${url}`);
 		callback(Http, turma, grupo, value);
 	} : () => {
