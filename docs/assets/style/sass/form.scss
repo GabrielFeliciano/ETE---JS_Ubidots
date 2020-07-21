@@ -1,9 +1,22 @@
 .form__container {
+    box-sizing: border-box;
     width: 100%;
+    margin: 2rem 0;
+    padding: 1rem;
+    background-color: #ffffff50;
+    border-top-left-radius: 1.5rem;
+
+    max-width: 950px;
 
     #answer {
         width: 100%;
         justify-content: space-between;
+    }
+
+    & > h2 {
+        padding: .4rem;
+        background-color: goldenrod;
+        margin-right: auto;
     }
 }
 
@@ -31,7 +44,7 @@
     }
 }
 
-.form__container > *:not(.form) {
+.form__container > div:not(.form) {
     width: 100%;
     justify-content: space-between;
     padding: .3rem 0;

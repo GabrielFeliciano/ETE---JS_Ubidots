@@ -24,13 +24,17 @@ body {
 body header, body main, body footer {
   box-sizing: border-box;
   width: 100%;
-  padding: 0 10%;
+  padding-left: 10%;
+  padding-right: 10%;
   display: flex;
   flex-flow: column;
   justify-content: center;
   align-items: center;
 }
 
+header {
+  padding-top: 1.5rem;
+}
 header h1 {
   padding: .2em;
   font-size: 3em;
@@ -66,17 +70,27 @@ header h2 {
 }
 
 main {
-  background-color: #ffffff30;
   margin: 2rem 0;
   padding: 2rem !important;
 }
 
 .form__container {
+  box-sizing: border-box;
   width: 100%;
+  margin: 2rem 0;
+  padding: 1rem;
+  background-color: #ffffff50;
+  border-top-left-radius: 1.5rem;
+  max-width: 950px;
 }
 .form__container #answer {
   width: 100%;
   justify-content: space-between;
+}
+.form__container > h2 {
+  padding: .4rem;
+  background-color: goldenrod;
+  margin-right: auto;
 }
 
 .form {
@@ -99,13 +113,13 @@ main {
   font-size: 1.2em;
 }
 
-.form__container > *:not(.form) {
+.form__container > div:not(.form) {
   width: 100%;
   justify-content: space-between;
   padding: .3rem 0;
   font-size: 1.2em;
 }
-.form__container > *:not(.form) select, .form__container > *:not(.form) input {
+.form__container > div:not(.form) select, .form__container > div:not(.form) input {
   font-size: 1.2em;
 }
 

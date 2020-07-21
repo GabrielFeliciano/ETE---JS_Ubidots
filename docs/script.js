@@ -3,12 +3,30 @@
 // Para o exemplo do grupo20 da T24: my-new-device = simulador-t24-11a20
 // Device = dispositivo criado (ou a ser criado) no Ubidots
 
+const randomNumberValid = () => (Math.random() * 100).toFixed(2)
+
 const tokens = {
 	'21': 'BBFF-FukjG5drP21TGHxG8ZHklRlVctcwjF',
 	'22': 'BBFF-raPU9fVpENnd00E18dyUtFioubzvUl',
 	'23': 'BBFF-jhQu3sb7mCKSP8LczeZOeKMeIuVCHK',
 	'24': 'BBFF-qAA5hxwN40of9tGSIkunVt9Ox4URGs'
 };
+
+// true => 01-10, false => 1-10
+const linkRangeSituation = {
+	'21': false,
+	'22': true,
+	'23': true,
+	'24': false
+}
+
+// true => grupo01, false => grupo1
+const groupZeroSituation = {
+	'21': true,
+	'22': false,
+	'23': false,
+	'24': true
+}
 
 $(document).ready(function () {
 	// Temp set-up
@@ -26,14 +44,36 @@ $(document).ready(function () {
 	}
 });
 
-function requester (turma, grupo, value, callback) {
+/**
+ * 
+ * @param {*} classTeam 
+ * @param {*} group 
+ * @param {*} value 
+ */
+function buildJson (classTeam, group, value) {
+	//console.log('0'.repeat(2-group.length), group.length);
+
+	const range = group * 1 <= 10 ? `${linkRangeSituation[classTeam] ? '0' : ''}1a10` : '11a20';
+	
+	const url = `https://industrial.api.ubidots.com/api/v1.6/devices/simulador-t${classTeam}-${range}`;
+	const json = groupZeroSituation[classTeam] ? `{"grupo${'0'.repeat(2-group.toString().length)}${group}":${value}}` : `{"grupo${group}":${value}}`;
+
+	return {url: url, json: json}
+}
+
+/**
+ * Requests Ubidots API.
+ * @param {number|string} classTeam 
+ * @param {number|string} group 
+ * @param {number|string} value 
+ * @param {function} callback 
+ * @returns {object} [XMLHttpRequest object]
+ */
+function requester (classTeam, group, value, callback) {
 	const Http = new XMLHttpRequest();
 	
-	const token = tokens[turma];
-	const range = grupo * 1 <= 10 ? '01a10' : '11a20'
-	const url = `https://industrial.api.ubidots.com/api/v1.6/devices/simulador-t${turma}-${range}`;
-	
-	const dado = `{"grupo${grupo}":${value}}`;
+	const token = tokens[classTeam];
+	const {url, json} = buildJson(classTeam, group, value);
 	
 	Http.open("POST", url);
 	
@@ -41,16 +81,23 @@ function requester (turma, grupo, value, callback) {
 	Http.setRequestHeader("Content-Type", "application/json");
 	
 	Http.onload = callback ? () => {
-		console.log(`Dados: ${dado}`)
-		console.log(`Turma: ${turma}, Grupo: ${grupo}, Value: ${value}, url: ${url}`);
-		callback(Http, turma, grupo, value);
+		const printStyle = 'background: #222; color: #bada55'
+		const toPrint = [
+			`Json: ${json}`,
+			`Turma: <${classTeam}>`, 
+			`Grupo: <${group}>`, 
+			`Value: <${value}>`, 
+			`url: ${url}`,
+		];	
+		console.log(`%c\n${toPrint.join('\n')}\n\n`, printStyle);
+		callback(Http, classTeam, group, value);
 	} : () => {
 		console.log(Http.responseText);
 		Http.responseText.includes("201") ? console.log('Deu certo') : console.log('Deu errado');
 		console.log(Http);
 	}
 	
-	Http.send(dado);
+	Http.send(json);
 }
 
 $('#send').click(function () {
@@ -79,8 +126,7 @@ $('#explode').click(function () {
 	let classTeam = 21;
 	let group = 1;
 	const timing = $('#timing-explode').val() * 1 || 500;
-	const val = $('#val-explode').val() * 1
-	const randomNumberValid = () => (Math.random() * 100).toFixed(2)
+	const val = $('#val-explode').val() * 1 ?? randomNumberValid()
 	const $attacList__container = $(`
 		<li class="attac-list__container">
 			<mark>Inicializando Destruição.. (Destruição em cerca de ${4*20*timing/1000} segundos)</mark>
@@ -96,13 +142,12 @@ $('#explode').click(function () {
 			clearInterval(id);
 			return null;
 		}
-		requester(classTeam, group, val || randomNumberValid(), (Http, turma, group, val) => {
+		console.log(val ?? true)
+		requester(classTeam, group, val, (Http, turma, group, val) => {
 			if (Http.responseText.includes("201")) {
-				console.log('Deu certo');
-				$attacList.append($(`<li class="right">Deu certo - Turma: ${turma}, Grupo: ${group}, Valor: ${val || randomNumberValid()};</li>`));
+				$attacList.append($(`<li class="right">Deu certo - Turma: ${turma}, Grupo: ${group}, Valor: ${val};</li>`));
 			} else {
-				console.log('Deu errado');
-				$attacList.append($(`<li class="wrong">Deu erro - Turma: ${turma}, Grupo: ${group}, Valor: ${val || randomNumberValid()};</li>`));
+				$attacList.append($(`<li class="wrong">Deu erro - Turma: ${turma}, Grupo: ${group}, Valor: ${val};</li>`));
 			}
 		})
 		group++;
