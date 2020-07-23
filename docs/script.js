@@ -125,6 +125,57 @@ $('#explode').click(function () {
 
 	let classTeam = 21;
 	let group = 1;
+
+	const createObjToSpecifyTargets = (specificCommand) => {
+		const objTargets = {};
+		// Regex down => https://regex101.com/r/ytXktR/1
+		const classTeamTargets = specificCommand.matchAll(/(\d+)\(\s*((?:(?:(?:\d+\s*\-\s*\d+)|(?:\d+))\,?\s*)+)\)/g);
+
+		for (let classTeamTarget of classTeamTargets) {
+			// Regex down => https://regex101.com/r/q9Vr09/1
+			const groupRanges = classTeamTarget[2].matchAll(/(?:(\d+)\s*\-\s*(\d+))|(?:(\d+))/g);
+
+			const groupRangesList = [];
+			for (let groupRange of groupRanges) {
+				if (groupRange[1] && groupRange[2]){
+					groupRangesList.push({min: groupRange[1], max: groupRange[2]});
+				} else {
+					groupRangesList.push({min: groupRange[0], max: groupRange[0]});
+				}
+			}
+			objTargets[classTeamTarget[1]] = groupRangesList;
+		}
+
+		return objTargets;
+	}
+	const specificCommand = $('#precise-explode').val()
+	const specific = specificCommand ? createObjToSpecifyTargets(specificCommand) : null
+	const isClassAndGroupWithingSpecifiedTargets = (classTeam, group) => {
+		if (!Object.keys(specific).includes(classTeam.toString())) {
+			return {
+				classTeam: Object.keys(specific).map(parseInt).sort((a,b) => a - b)[0], 
+				group: 1
+			};
+		}
+		const isRangeGroupValid = specific[classTeam].some(range => {
+			if (range.min <= group && group <= range.max) {
+				return true;
+			}
+			return false;
+		});
+		if (!isRangeGroupValid) {
+			return {
+				classTeam: classTeam,
+				group: specific[classTeam]
+					.map(range => parseInt(range.min))
+					.filter(minRange => minRange > group)
+					.sort((a,b) => a - b)[0]
+			};
+		}
+		return false;
+	}
+	isClassAndGroupWithingSpecifiedTargets.bind(specific);
+
 	const timing = $('#timing-explode').val() * 1 || 500;
 	const val = $('#val-explode').val() * 1 ?? randomNumberValid()
 	const $attacList__container = $(`
@@ -137,12 +188,26 @@ $('#explode').click(function () {
 	$('#resultados').append($attacList__container);
 	
 	const id = setInterval(() => {
+		if (group > 20) {
+			classTeam++;
+			group = 1;
+		}
 		if (classTeam > 24) {
 			console.log('Finalizado!');
 			clearInterval(id);
 			return null;
 		}
-		console.log(val ?? true)
+		const isClassAndGroupWithingSpecifiedTargetsResult = isClassAndGroupWithingSpecifiedTargets(classTeam, group);
+		if (isClassAndGroupWithingSpecifiedTargetsResult) {
+			classTeam = isClassAndGroupWithingSpecifiedTargetsResult.classTeam;
+			group = isClassAndGroupWithingSpecifiedTargetsResult.group;
+			if (group == undefined) {
+				console.log('Finalizado!');
+				clearInterval(id);
+			}
+			return null;
+		}
+
 		requester(classTeam, group, val, (Http, turma, group, val) => {
 			if (Http.responseText.includes("201")) {
 				$attacList.append($(`<li class="right">Deu certo - Turma: ${turma}, Grupo: ${group}, Valor: ${val};</li>`));
@@ -151,9 +216,5 @@ $('#explode').click(function () {
 			}
 		})
 		group++;
-		if (group > 20) {
-			classTeam++;
-			group = 1;
-		}
 	}, timing);
 })
