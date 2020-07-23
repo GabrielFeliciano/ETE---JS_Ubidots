@@ -1,7 +1,9 @@
-// Exemplo de envio de dados para o Ubidots
-// url = "https://industrial.api.ubidots.com/api/v1.6/devices/my-new-device"
-// Para o exemplo do grupo20 da T24: my-new-device = simulador-t24-11a20
-// Device = dispositivo criado (ou a ser criado) no Ubidots
+/**
+ * Exemplo de envio de dados para o Ubidots
+ * url = "https://industrial.api.ubidots.com/api/v1.6/devices/my-new-device"
+ * Para o exemplo do grupo20 da T24: my-new-device = simulador-t24-11a20
+ * Device = dispositivo criado (ou a ser criado) no Ubidots
+ */
 
 const randomNumberValid = () => (Math.random() * 100).toFixed(2)
 
@@ -28,6 +30,7 @@ const groupZeroSituation = {
 	'24': true
 }
 
+// When page up...
 $(document).ready(function () {
 	// Temp set-up
 	$('#temperatura').val(45);
@@ -45,10 +48,10 @@ $(document).ready(function () {
 });
 
 /**
- * 
- * @param {*} classTeam 
- * @param {*} group 
- * @param {*} value 
+ * @param {number|string} classTeam [A integer number in string or number]
+ * @param {number|string} group [A integer number in string or number]
+ * @param {number|string} value [A integer number in string or number]
+ * @returns {{url: string, json: string}} [Object with url and json]
  */
 function buildJson (classTeam, group, value) {
 	//console.log('0'.repeat(2-group.length), group.length);
@@ -80,7 +83,7 @@ function requester (classTeam, group, value, callback) {
 	Http.setRequestHeader("X-Auth-Token", token);
 	Http.setRequestHeader("Content-Type", "application/json");
 	
-	Http.onload = callback ? () => {
+	Http.onload = () => {
 		const printStyle = 'background: #222; color: #bada55'
 		const toPrint = [
 			`Json: ${json}`,
@@ -90,11 +93,7 @@ function requester (classTeam, group, value, callback) {
 			`url: ${url}`,
 		];	
 		console.log(`%c\n${toPrint.join('\n')}\n\n`, printStyle);
-		callback(Http, classTeam, group, value);
-	} : () => {
-		console.log(Http.responseText);
-		Http.responseText.includes("201") ? console.log('Deu certo') : console.log('Deu errado');
-		console.log(Http);
+		callback ? callback(Http, classTeam, group, value) : null;
 	}
 	
 	Http.send(json);
@@ -120,64 +119,93 @@ $('#send').click(function () {
 	});
 });
 
+const createObjToSpecifyTargets = (specificCommand) => {
+	const objTargets = {};
+	// Regex down => https://regex101.com/r/ytXktR/1
+	const classTeamTargets = specificCommand.matchAll(/(\d+)\(\s*((?:(?:(?:\d+\s*\-\s*\d+)|(?:\d+))\,?\s*)+)\)/g);
+
+	for (let classTeamTarget of classTeamTargets) {
+		// Regex down => https://regex101.com/r/q9Vr09/1
+		const groupRanges = classTeamTarget[2].matchAll(/(?:(\d+)\s*\-\s*(\d+))|(?:(\d+))/g);
+
+		const groupRangesList = [];
+		for (let groupRange of groupRanges) {
+			if (groupRange[1] && groupRange[2]){
+				groupRangesList.push({min: groupRange[1], max: groupRange[2]});
+			} else {
+				groupRangesList.push({min: groupRange[0], max: groupRange[0]});
+			}
+		}
+		objTargets[classTeamTarget[1]] = groupRangesList;
+	}
+
+	return objTargets;
+}
+const isClassAndGroupWithingSpecifiedTargets = (classTeam, group, specific) => {
+	if (!specific) { return false; }
+
+	if (!Object.keys(specific).includes(classTeam && classTeam.toString())) {
+		return {
+			classTeam: Object.keys(specific)
+				.map(x => parseInt(x))
+				.filter(minClassTeam => minClassTeam > classTeam)
+				.sort((a,b) => a - b)[0], 
+			group: 1
+		};
+	}
+	const isRangeGroupValid = specific[classTeam].some(range => {
+		if (range.min <= group && group <= range.max) {
+			return true;
+		}
+		return false;
+	});
+	if (!isRangeGroupValid) {
+		const nextGroup = specific[classTeam]
+			.map(range => parseInt(range.min))
+			.filter(minRange => minRange > group)
+			.sort((a,b) => a - b)[0];
+
+		if (nextGroup) {
+			return {
+				classTeam: classTeam,
+				group: nextGroup
+			};
+		} else {
+			console.log(Object.keys(specific))
+			return {
+				classTeam: Object.keys(specific)
+					.map(x => parseInt(x))
+					.filter(minClassTeam => minClassTeam > classTeam)
+					.sort((a,b) => a - b)[0],
+				group: 1
+			}
+		}
+	}
+	return false;
+}
 $('#explode').click(function () {
 	console.warn('Inicializando Destruição..');
 
 	let classTeam = 21;
 	let group = 1;
 
-	const createObjToSpecifyTargets = (specificCommand) => {
-		const objTargets = {};
-		// Regex down => https://regex101.com/r/ytXktR/1
-		const classTeamTargets = specificCommand.matchAll(/(\d+)\(\s*((?:(?:(?:\d+\s*\-\s*\d+)|(?:\d+))\,?\s*)+)\)/g);
-
-		for (let classTeamTarget of classTeamTargets) {
-			// Regex down => https://regex101.com/r/q9Vr09/1
-			const groupRanges = classTeamTarget[2].matchAll(/(?:(\d+)\s*\-\s*(\d+))|(?:(\d+))/g);
-
-			const groupRangesList = [];
-			for (let groupRange of groupRanges) {
-				if (groupRange[1] && groupRange[2]){
-					groupRangesList.push({min: groupRange[1], max: groupRange[2]});
-				} else {
-					groupRangesList.push({min: groupRange[0], max: groupRange[0]});
-				}
-			}
-			objTargets[classTeamTarget[1]] = groupRangesList;
-		}
-
-		return objTargets;
-	}
+	// Specifications
 	const specificCommand = $('#precise-explode').val()
 	const specific = specificCommand ? createObjToSpecifyTargets(specificCommand) : null
-	const isClassAndGroupWithingSpecifiedTargets = (classTeam, group) => {
-		if (!Object.keys(specific).includes(classTeam.toString())) {
-			return {
-				classTeam: Object.keys(specific).map(parseInt).sort((a,b) => a - b)[0], 
-				group: 1
-			};
-		}
-		const isRangeGroupValid = specific[classTeam].some(range => {
-			if (range.min <= group && group <= range.max) {
-				return true;
-			}
-			return false;
-		});
-		if (!isRangeGroupValid) {
-			return {
-				classTeam: classTeam,
-				group: specific[classTeam]
-					.map(range => parseInt(range.min))
-					.filter(minRange => minRange > group)
-					.sort((a,b) => a - b)[0]
-			};
-		}
-		return false;
-	}
-	isClassAndGroupWithingSpecifiedTargets.bind(specific);
+	console.log(specific)
 
+	// Timing
 	const timing = $('#timing-explode').val() * 1 || 500;
-	const val = $('#val-explode').val() * 1 ?? randomNumberValid()
+
+	// is a infinite Destruction
+	const isInfiniteDestruction = $("#infinite-explode").prop('checked');
+	let loop = 0;
+
+	// Value
+	const valGotFrom$valExplode = parseInt($('#val-explode').val());
+	const val = isNaN(valGotFrom$valExplode) ? randomNumberValid : () => valGotFrom$valExplode;
+
+	// Result List
 	const $attacList__container = $(`
 		<li class="attac-list__container">
 			<mark>Inicializando Destruição.. (Destruição em cerca de ${4*20*timing/1000} segundos)</mark>
@@ -188,33 +216,40 @@ $('#explode').click(function () {
 	$('#resultados').append($attacList__container);
 	
 	const id = setInterval(() => {
-		if (group > 20) {
-			classTeam++;
-			group = 1;
-		}
-		if (classTeam > 24) {
-			console.log('Finalizado!');
-			clearInterval(id);
-			return null;
-		}
-		const isClassAndGroupWithingSpecifiedTargetsResult = isClassAndGroupWithingSpecifiedTargets(classTeam, group);
+		const isClassAndGroupWithingSpecifiedTargetsResult = isClassAndGroupWithingSpecifiedTargets(classTeam, group, specific);
 		if (isClassAndGroupWithingSpecifiedTargetsResult) {
 			classTeam = isClassAndGroupWithingSpecifiedTargetsResult.classTeam;
 			group = isClassAndGroupWithingSpecifiedTargetsResult.group;
-			if (group == undefined) {
+		}
+		
+		if (group > 20 || !group) {
+			classTeam++;
+			group = 1;
+		}
+		if (classTeam > 24 || !classTeam) {
+			if (isInfiniteDestruction) {
+				classTeam = 21;
+				group = 1;
+				loop++;
+			} else {
 				console.log('Finalizado!');
+				$attacList__container.append($('<mark>Destruição Finalizada!</mark>'))
 				clearInterval(id);
+				return null;
 			}
-			return null;
 		}
 
-		requester(classTeam, group, val, (Http, turma, group, val) => {
-			if (Http.responseText.includes("201")) {
-				$attacList.append($(`<li class="right">Deu certo - Turma: ${turma}, Grupo: ${group}, Valor: ${val};</li>`));
-			} else {
-				$attacList.append($(`<li class="wrong">Deu erro - Turma: ${turma}, Grupo: ${group}, Valor: ${val};</li>`));
-			}
-		})
+		if (loop == 0) {
+			requester(classTeam, group, val(), (Http, turma, group, val) => {
+				if (Http.responseText.includes("201")) {
+					$attacList.append($(`<li class="right">Deu certo - Turma: ${turma}, Grupo: ${group}, Valor: ${val};</li>`));
+				} else {
+					$attacList.append($(`<li class="wrong">Deu erro - Turma: ${turma}, Grupo: ${group}, Valor: ${val};</li>`));
+				}
+			})
+		} else {
+			requester(classTeam, group, val());
+		}
 		group++;
 	}, timing);
 })
